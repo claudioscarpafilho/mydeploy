@@ -1,5 +1,4 @@
 const { exec } = require('child_process')
-const bodyParser = require('body-parser')
 const express = require('express')
 const util = require('util')
 
@@ -7,7 +6,7 @@ const execAsync = util.promisify(exec)
 
 const app = express()
 
-app.use(bodyParser.json())
+app.use(express.json())
 
 app.post('/docker', async (req, res) => {
   try {
