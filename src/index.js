@@ -1,18 +1,25 @@
 const { exec } = require('child_process')
 const express = require('express')
+const https = require('https')
 const util = require('util')
+const fs = require('fs')
 
 const execAsync = util.promisify(exec)
 
 const app = express()
 
+const httpsOptions = {
+  key: fs.readFileSync('/etc/server-web/ssl/dominio.com.br.key'),
+  cert: fs.readFileSync('/etc/server-web/ssl/dominio.com.br.crt'),
+}
+
 app.use(express.json())
 
 app.post('/docker', async (req, res) => {
   try {
-    if (req.body?.ref?.includes('master') === false) return res.send('Ignorando o build. O deploy só é feito na branch master.')
+    if (req.body?.ref?.includes('master') !== true) return res.send('Ignorando o build. O deploy só é feito na branch master.')
 
-    const cwd = `/etc/server-web/app/${req.params.repo}`
+    const cwd = `/etc/server-web/app/${req.body.repository.name}`
 
     console.log('git reset:')
     console.log(await execAsync('git reset --hard', { cwd }))
@@ -30,6 +37,6 @@ app.post('/docker', async (req, res) => {
   }
 })
 
-app.listen(3000, () => {
-  console.log(`Servidor de deploy ouvindo na porta ${3000}.`)
+https.createServer(httpsOptions, app).listen(4400, () => {
+  console.log('Server running on https://dominio.com.br:4400')
 })
